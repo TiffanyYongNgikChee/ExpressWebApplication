@@ -1,5 +1,6 @@
 var express = require('express')
 var mysqlDAO = require('./mySqlDao')
+var mongoDAO = require('./mongoDAO')
 var app = express();
 
 app.listen(3004, () => {
@@ -19,4 +20,15 @@ app.get('/students', (req, res) => {
         res.send(error)
     })
 })
-        
+
+// Get Lecturers from MongoDB
+app.get('/find', (req, res) => {
+    mongoDAO.findAll()
+        .then((documents) => {
+            res.send(documents);
+        })
+        .catch((error) => {
+            console.error('Error fetching lecturers:', error.message);
+            res.status(500).send(error.message);
+        });
+});
