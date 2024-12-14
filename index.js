@@ -8,9 +8,14 @@ app.listen(3004, () => {
 })
 
 app.get('/', (req, res) => {
-    res.send("<h1>G00425067</h1>")
-})
-       
+    res.send(`
+        <h1>G00425067</h1>
+        <p><a href="/students">Students</a></p>
+        <p><a href="grades">Grades</a></p>
+        <p><a href="/lecturers">Lecturers</a></p>
+        
+    `);
+});    
 app.get('/students', (req, res) => {
     mysqlDAO.getStudents()
     .then((data) => {
@@ -21,8 +26,18 @@ app.get('/students', (req, res) => {
     })
 })
 
+app.get('/grades', (req, res) => {
+    mysqlDAO.getStudents()
+    .then((data) => {
+        res.send(data)
+    })
+    .catch((error) => {
+        res.send(error)
+    })
+})
+
 // Get Lecturers from MongoDB
-app.get('/find', (req, res) => {
+app.get('/lecturers', (req, res) => {
     mongoDAO.findAll()
         .then((documents) => {
             res.send(documents);
