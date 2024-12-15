@@ -45,4 +45,4 @@ var getGrades = function() {
     })
 }
 
-module.exports = { getStudents } 
+module.exports = { getStudents, getGrades } 

@@ -19,15 +19,45 @@ app.get('/', (req, res) => {
 app.get('/students', (req, res) => {
     mysqlDAO.getStudents()
     .then((data) => {
-        res.send(data)
+        let table = `
+            <h1>Students</h1>
+            <p><a href="/">Home</a></p>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>StudentID</th>
+                        <th>Name</th>
+                        <th>Age</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        data.forEach(student => {
+            table += `
+                <tr>
+                    <td>${student.sid}</td>
+                    <td>${student.name}</td>
+                    <td>${student.age}</td>
+                </tr>
+            `;
+        });
+
+        table += `
+                </tbody>
+            </table>
+            <p><a href="/">Back to Home</a></p>
+        `;
+
+        res.send(table);
     })
     .catch((error) => {
-        res.send(error)
-    })
-})
+        res.send(`<p>Error: ${error}</p><p><a href="/">Back to Home</a></p>`);
+    });
+});
 
 app.get('/grades', (req, res) => {
-    mysqlDAO.getStudents()
+    mysqlDAO.getGrades()
     .then((data) => {
         res.send(data)
     })
