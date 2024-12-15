@@ -45,4 +45,18 @@ var getGrades = function() {
     })
 }
 
-module.exports = { getStudents, getGrades } 
+// New function to update a student
+var updateStudent = function (sid, name, age) {
+    return new Promise((resolve, reject) => {
+        pool.query('UPDATE student SET name = ?, age = ? WHERE sid = ?', [name, age, sid])
+            .then((result) => {
+                resolve(result);
+            })
+            .catch((error) => {
+                reject(error);
+            });
+    });
+};
+
+
+module.exports = { getStudents, getGrades,updateStudent } 
