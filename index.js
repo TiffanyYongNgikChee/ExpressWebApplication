@@ -24,6 +24,7 @@ app.get('/students', (req, res) => {
     .then((data) => {
         let table = `
             <h1>Students</h1>
+            <p><a href="/students/add">Add Student</a></p>
             <p><a href="/">Home</a></p>
             <table border="1">
                 <thead>
@@ -150,6 +151,92 @@ app.post('/students/edit/:sid', (req, res) => {
     mysqlDAO.updateStudent(sid, name, age)
         .then(() => {
             res.redirect('/students');
+        })
+        .catch((error) => {
+            res.send(`<p>Error: ${error}</p><p><a href="/students">Back to Students</a></p>`);
+        });
+});
+
+// GET /students/add - Display Add Student Form
+app.get('/students/add', (req, res) => {
+    res.send(`
+        <h1>Add Student</h1>
+        <form method="POST" action="/students/add">
+            <label>Student ID (4 characters):</label>
+            <input type="text" name="sid" required minlength="4" maxlength="4"><br><br>
+            <label>Name:</label>
+            <input type="text" name="name" required minlength="2"><br><br>
+            <label>Age:</label>
+            <input type="number" name="age" required min="18"><br><br>
+            <button type="submit">Add</button>
+        </form>
+        <p><a href="/students">Back to Students</a></p>
+    `);
+});
+
+// POST /students/add - Handle Add Student Form Submission
+app.post('/students/add', (req, res) => {
+    const { sid, name, age } = req.body;
+
+    // Input validation
+    const errors = [];
+    if (sid.length !== 4) {
+        errors.push("Student ID must be exactly 4 characters.");
+    }
+    if (name.length < 2) {
+        errors.push("Name must be at least 2 characters long.");
+    }
+    if (parseInt(age) < 18) {
+        errors.push("Age must be 18 or older.");
+    }
+
+    if (errors.length > 0) {
+        res.send(`
+            <h1>Add Student</h1>
+            <form method="POST" action="/students/add">
+                <label>Student ID (4 characters):</label>
+                <input type="text" name="sid" value="${sid}" required minlength="4" maxlength="4"><br><br>
+                <label>Name:</label>
+                <input type="text" name="name" value="${name}" required minlength="2"><br><br>
+                <label>Age:</label>
+                <input type="number" name="age" value="${age}" required min="18"><br><br>
+                <button type="submit">Add</button>
+            </form>
+            <p style="color:red;">${errors.join('<br>')}</p>
+            <p><a href="/students">Back to Students</a></p>
+        `);
+        return;
+    }
+
+    // Check if student ID already exists
+    mysqlDAO.getStudents()
+        .then((students) => {
+            if (students.find(s => s.sid === sid)) {
+                res.send(`
+                    <h1>Add Student</h1>
+                    <form method="POST" action="/students/add">
+                        <label>Student ID (4 characters):</label>
+                        <input type="text" name="sid" value="${sid}" required minlength="4" maxlength="4"><br><br>
+                        <label>Name:</label>
+                        <input type="text" name="name" value="${name}" required minlength="2"><br><br>
+                        <label>Age:</label>
+                        <input type="number" name="age" value="${age}" required min="18"><br><br>
+                        <button type="submit">Add</button>
+                    </form>
+                    <p style="color:red;">Student ID already exists. Please use a unique ID.</p>
+                    <p><a href="/students">Back to Students</a></p>
+                `);
+                return;
+            }
+
+            // Add new student to the database
+            mysqlDAO.addStudent(sid, name, age)
+                .then(() => {
+                    res.redirect('/students');
+                })
+                .catch((error) => {
+                    res.send(`<p>Error: ${error}</p><p><a href="/students">Back to Students</a></p>`);
+                });
         })
         .catch((error) => {
             res.send(`<p>Error: ${error}</p><p><a href="/students">Back to Students</a></p>`);

@@ -58,5 +58,19 @@ var updateStudent = function (sid, name, age) {
     });
 };
 
+// Add a new student to the database
+var addStudent = function (sid, name, age) {
+    return new Promise((resolve, reject) => {
+        pool.query('INSERT INTO student (sid, name, age) VALUES (?, ?, ?)', [sid, name, age])
+            .then((result) => {
+                resolve(result);
+            })
+            .catch((error) => {
+                reject(error);
+            });
+    });
+};
 
-module.exports = { getStudents, getGrades,updateStudent } 
+
+
+module.exports = { getStudents, getGrades, updateStudent, addStudent} 
