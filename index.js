@@ -316,8 +316,8 @@ app.post('/students/add', (req, res) => {
 app.get('/lecturers/delete/:lid', (req, res) => {
     const lid = req.params.lid;
 
-    // Check if the lecturer is teaching any modules
-    mongoDAO.isTeaching(lid)
+    // Check if the lecturer teaches any modules using MySQL
+    mysqlDAO.isTeaching(lid)
         .then((isTeaching) => {
             if (isTeaching) {
                 // If the lecturer is teaching, show an error
@@ -327,7 +327,7 @@ app.get('/lecturers/delete/:lid', (req, res) => {
                     <h2>Cannot delete lecturer ${lid}. He/She has associated modules </h2>
                 `);
             } else {
-                // If the lecturer is not teaching, delete them
+                // If the lecturer is not teaching, delete them from MongoDB
                 mongoDAO.deleteLecturer(lid)
                     .then(() => {
                         res.redirect('/lecturers'); // Redirect back to the lecturers page

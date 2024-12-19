@@ -48,22 +48,9 @@ function deleteLecturer(_id) {
     });
 }
 
-// Function to check if a lecturer teaches any modules
-function isTeaching(_id) {
-    return new Promise((resolve, reject) => {
-        if (!coll) {
-            return reject(new Error('Collection not initialized'));
-        }
-        coll.findOne({ _id: _id, did: { $exists: true, $not: { $size: 0 } } })
-            .then((lecturer) => resolve(!!lecturer))
-            .catch((error) => reject(error));
-    });
-}
-
 // Export the findAll function
 module.exports = {
     findAll,
     findAllSorted,
-    deleteLecturer,
-    isTeaching
+    deleteLecturer
 };

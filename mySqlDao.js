@@ -84,7 +84,20 @@ var addStudent = function (sid, name, age) {
             });
     });
 };
+// function that checks if a lecturer is associated with any module 
+var isTeaching = function (lid) {
+    return new Promise((resolve, reject) => {
+        pool.query('SELECT COUNT(*) AS count FROM module WHERE lecturer = ?', [lid])
+            .then((result) => {
+                resolve(result[0].count > 0); // Returns true if count > 0, meaning the lecturer teaches a module
+            })
+            .catch((error) => {
+                reject(error);
+            });
+    });
+};
 
 
 
-module.exports = { getStudents, getGrades, updateStudent, addStudent} 
+
+module.exports = { getStudents, getGrades, updateStudent, addStudent, isTeaching} 
