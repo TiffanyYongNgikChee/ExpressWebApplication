@@ -108,15 +108,50 @@ app.get('/grades', (req, res) => {
         });
 });
 
-// Get Lecturers from MongoDB
 app.get('/lecturers', (req, res) => {
     mongoDAO.findAll()
-        .then((documents) => {
-            res.send(documents);
+    
+        .then((lecturers) => {
+            console.log(lecturers);
+            // Sort lecturers by their _id field (lecturer ID)
+            lecturers.sort((a, b) => (a._id > b._id ? 1 : -1));
+
+            let lecturersTable = `
+                <h1>Lecturers</h1>
+                <p><a href="/">Home</a></p>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Lecturer ID</th>
+                            <th>Name</th>
+                            <th>Modules</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            lecturers.forEach(lecturer => {
+                lecturersTable += `
+                    <tr>
+                        <td>${lecturer._id}</td>
+                        <td>${lecturer.name}</td>
+                        <td>${lecturer.did}</td>
+                        <td><a href="/lecturers/delete/${lecturer.lid}">Delete</a></td>
+                    </tr>
+                `;
+            });
+
+            lecturersTable += `
+                    </tbody>
+                </table>
+                <p><a href="/">Back to Home</a></p>
+            `;
+
+            res.send(lecturersTable);
         })
         .catch((error) => {
-            console.error('Error fetching lecturers:', error.message);
-            res.status(500).send(error.message);
+            res.send(`<p>Error: ${error.message}</p><p><a href="/">Back to Home</a></p>`);
         });
 });
 

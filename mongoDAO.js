@@ -10,20 +10,33 @@ MongoClient.connect('mongodb://127.0.0.1:27017')
     console.log(error.message)
     })
 
+// Function to find all documents
+function findAll() {
+    return new Promise((resolve, reject) => {
+        if (!coll) {
+            return reject(new Error('Collection not initialized'));
+        }
+        coll.find()
+            .toArray()
+            .then((documents) => resolve(documents))
+            .catch((error) => reject(error));
+    });
+}
+
 // Function to find all lecturers sorted by lecturer ID
 function findAllSorted() {
     return new Promise((resolve, reject) => {
         if (!coll) {
             return reject(new Error('Collection not initialized'));
         }
-        coll.find().sort({ lid: 1 }).toArray()
+        coll.find().sort({ _id: 1 }).toArray()
             .then((documents) => resolve(documents))
             .catch((error) => reject(error));
     });
 }
 
-
 // Export the findAll function
 module.exports = {
-    findAllSorted,
+    findAll,
+    findAllSorted
 };
