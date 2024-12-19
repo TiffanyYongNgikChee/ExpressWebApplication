@@ -35,8 +35,35 @@ function findAllSorted() {
     });
 }
 
+
+// Function to delete a lecturer by ID
+function deleteLecturer(_id) {
+    return new Promise((resolve, reject) => {
+        if (!coll) {
+            return reject(new Error('Collection not initialized'));
+        }
+        coll.deleteOne({ _id: _id })
+            .then((result) => resolve(result))
+            .catch((error) => reject(error));
+    });
+}
+
+// Function to check if a lecturer teaches any modules
+function isTeaching(_id) {
+    return new Promise((resolve, reject) => {
+        if (!coll) {
+            return reject(new Error('Collection not initialized'));
+        }
+        coll.findOne({ _id: _id, did: { $exists: true, $not: { $size: 0 } } })
+            .then((lecturer) => resolve(!!lecturer))
+            .catch((error) => reject(error));
+    });
+}
+
 // Export the findAll function
 module.exports = {
     findAll,
-    findAllSorted
+    findAllSorted,
+    deleteLecturer,
+    isTeaching
 };

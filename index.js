@@ -137,7 +137,7 @@ app.get('/lecturers', (req, res) => {
                         <td>${lecturer._id}</td>
                         <td>${lecturer.name}</td>
                         <td>${lecturer.did}</td>
-                        <td><a href="/lecturers/delete/${lecturer.lid}">Delete</a></td>
+                        <td><a href="/lecturers/delete/${lecturer._id}">Delete</a></td>
                     </tr>
                 `;
             });
@@ -309,5 +309,35 @@ app.post('/students/add', (req, res) => {
         })
         .catch((error) => {
             res.send(`<p>Error: ${error}</p><p><a href="/students">Back to Students</a></p>`);
+        });
+});
+
+// Route to delete a lecturer by ID
+app.get('/lecturers/delete/:lid', (req, res) => {
+    const lid = req.params.lid;
+
+    // Check if the lecturer is teaching any modules
+    mongoDAO.isTeaching(lid)
+        .then((isTeaching) => {
+            if (isTeaching) {
+                // If the lecturer is teaching, show an error
+                res.send(`
+                    <p><a href="/">Home</a></p>
+                    <h1>Error Message</h1>
+                    <h2>Cannot delete lecturer ${lid}. He/She has associated modules </h2>
+                `);
+            } else {
+                // If the lecturer is not teaching, delete them
+                mongoDAO.deleteLecturer(lid)
+                    .then(() => {
+                        res.redirect('/lecturers'); // Redirect back to the lecturers page
+                    })
+                    .catch((error) => {
+                        res.send(`<p>Error: ${error.message}</p><p><a href="/lecturers">Back to Lecturers</a></p>`);
+                    });
+            }
+        })
+        .catch((error) => {
+            res.send(`<p>Error: ${error.message}</p><p><a href="/lecturers">Back to Lecturers</a></p>`);
         });
 });
