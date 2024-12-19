@@ -63,16 +63,50 @@ app.get('/students', (req, res) => {
         res.send(`<p>Error: ${error}</p><p><a href="/">Back to Home</a></p>`);
     });
 });
-
 app.get('/grades', (req, res) => {
     mysqlDAO.getGrades()
-    .then((data) => {
-        res.send(data)
-    })
-    .catch((error) => {
-        res.send(error)
-    })
-})
+        .then((data) => {
+            // Build the Grades table
+            let gradesTable = `
+                <h1>Grades</h1>
+                <p><a href="/">Home</a></p>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Module Name</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.forEach(row => {
+                const studentName = row.studentName || 'Unknown Student';
+                const moduleName = row.moduleName ||  '';
+                const grade = row.grade || ' ';
+
+                gradesTable += `
+                    <tr>
+                        <td>${studentName}</td>
+                        <td>${moduleName}</td>
+                        <td>${grade}</td>
+                    </tr>
+                `;
+            });
+
+            gradesTable += `
+                    </tbody>
+                </table>
+                <p><a href="/">Back to Home</a></p>
+            `;
+
+            res.send(gradesTable);
+        })
+        .catch((error) => {
+            res.send(`<p>Error: ${error.message}</p><p><a href="/">Back to Home</a></p>`);
+        });
+});
 
 // Get Lecturers from MongoDB
 app.get('/lecturers', (req, res) => {
