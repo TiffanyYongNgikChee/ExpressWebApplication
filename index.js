@@ -11,6 +11,7 @@ app.listen(3004, () => {
 })
 
 app.get('/', (req, res) => {
+    
     res.send(`
         <h1>G00425067</h1>
         <p><a href="/students">Students</a></p>
@@ -70,6 +71,7 @@ app.get('/grades', (req, res) => {
             let gradesTable = `
                 <h1>Grades</h1>
                 <p><a href="/">Home</a></p>
+                <p><a href="/grades-chart">Grade Analysis</a></p>
                 <table border="1">
                     <thead>
                         <tr>
@@ -341,3 +343,91 @@ app.get('/lecturers/delete/:lid', (req, res) => {
             res.send(`<p>Error: ${error.message}</p><p><a href="/lecturers">Back to Lecturers</a></p>`);
         });
 });
+
+app.get('/grades/chart-data', (req, res) => {
+    mysqlDAO.getGrades()
+        .then((data) => {
+            const chartData = {};
+
+            // Organize data: { moduleName: { highestGrade: { studentName, grade } } }
+            data.forEach(row => {
+                const moduleName = row.moduleName || 'Unknown Module';
+                const grade = row.grade || 0;
+                const studentName = row.studentName || 'Unknown Student';
+
+                if (!chartData[moduleName] || chartData[moduleName].grade < grade) {
+                    chartData[moduleName] = { studentName, grade };
+                }
+            });
+
+            res.json(chartData); // Send data in JSON format
+        })
+        .catch((error) => {
+            res.status(500).json({ error: error.message });
+        });
+});
+
+app.get('/grades-chart', (req, res) => {
+    mysqlDAO.getGrades()
+        .then(() => {
+            res.send(`
+                <h1>Grades Chart</h1>
+                <p><a href="/">Home</a></p>
+                <canvas id="gradesChart" width="800" height="400"></canvas>
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <script>
+                    fetch('/grades/chart-data')
+                        .then(response => response.json())
+                        .then(data => {
+                            const moduleNames = Object.keys(data);
+                            const grades = moduleNames.map(module => data[module].grade);
+                            const studentNames = moduleNames.map(module => data[module].studentName);
+
+                            const ctx = document.getElementById('gradesChart').getContext('2d');
+                            new Chart(ctx, {
+                                type: 'bar',
+                                data: {
+                                    labels: moduleNames,
+                                    datasets: [{
+                                        label: 'Grades',
+                                        data: grades,
+                                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                        borderColor: 'rgba(75, 192, 192, 1)',
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            ticks: {
+                                                stepSize: 10
+                                            }
+                                        }
+                                    },
+                                    plugins: {
+                                        tooltip: {
+                                            callbacks: {
+                                                label: function(context) {
+                                                    const moduleName = context.label;
+                                                    const grade = context.raw;
+                                                    const studentName = data[moduleName].studentName;
+                                                    return 'Grade: ' + grade + ', Student: ' + studentName;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error fetching chart data:', error);
+                        });
+                </script>
+            `);
+        })
+        .catch((error) => {
+            res.send(`<p>Error: ${error.message}</p><p><a href="/">Back to Home</a></p>`);
+        });
+});
+

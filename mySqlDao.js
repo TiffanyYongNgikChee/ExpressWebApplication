@@ -97,7 +97,34 @@ var isTeaching = function (lid) {
     });
 };
 
-
+//Get grade chart
+var getGrades = function() {
+    return new Promise((resolve, reject) => {
+        //get the student name, module name, and grade.
+        pool.query(`
+            SELECT 
+                s.name AS studentName, 
+                m.name AS moduleName, 
+                g.grade
+            FROM 
+                student s
+            LEFT JOIN 
+                grade g ON s.sid = g.sid
+            LEFT JOIN 
+                module m ON g.mid = m.mid
+            ORDER BY 
+                s.name ASC, g.grade ASC
+        `)
+        .then((data) => {
+            console.log(data)
+            resolve(data)
+        })
+        .catch((error) => {
+            console.log(error)
+            reject(error)
+        })
+    })
+}
 
 
 module.exports = { getStudents, getGrades, updateStudent, addStudent, isTeaching} 
