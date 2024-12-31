@@ -21,50 +21,63 @@ app.get('/', (req, res) => {
         
     `);
 });    
+
 // Route to fetch and display all students
 app.get('/students', (req, res) => {
-    mysqlDAO.getStudents()
-    .then((data) => {
-        let table = `
-            <h1>Students</h1>
-            <p><a href="/students/add">Add Student</a></p>
-            <p><a href="/">Home</a></p>
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>StudentID</th>
-                        <th>Name</th>
-                        <th>Age</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-        // Loop through student data to build table rows
-        data.forEach(student => {
-            table += `
-                <tr>
-                    <td>${student.sid}</td>
-                    <td>${student.name}</td>
-                    <td>${student.age}</td>
-                    <td>
-                        <a href="/students/edit/${student.sid}">Update</a>
-                    </td>
-                </tr>
+    const search = req.query.search || ''; // Get the search query from the URL
+    console.log("Search query:", search); // Log the search term for debugging
+
+    // Call the getStudents function with the search term
+    mysqlDAO.getStudents(search)
+        .then((data) => {
+            console.log("Data fetched:", data); // Log fetched data
+            let table = `
+                <h1>Students</h1>
+                <form method="GET" action="/students">
+                    <label for="search">Search by Name:</label>
+                    <input type="text" id="search" name="search" value="${search}" placeholder="Enter name">
+                    <button type="submit">Search</button>
+                </form>
+                <p><a href="/students/add">Add Student</a></p>
+                <p><a href="/">Home</a></p>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>StudentID</th>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
             `;
+
+            // Loop through student data to build table rows
+            data.forEach(student => {
+                table += `
+                    <tr>
+                        <td>${student.sid}</td>
+                        <td>${student.name}</td>
+                        <td>${student.age}</td>
+                        <td>
+                            <a href="/students/edit/${student.sid}">Update</a>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            table += `
+                    </tbody>
+                </table>
+                <p><a href="/">Back to Home</a></p>
+            `;
+
+            res.send(table); // Send the constructed table
+        })
+        .catch((error) => {
+            console.error("Error fetching students:", error); // Log any errors
+            res.send(`<p>Error: ${error.message}</p><p><a href="/">Back to Home</a></p>`);
         });
-
-        table += `
-                </tbody>
-            </table>
-            <p><a href="/">Back to Home</a></p>
-        `;
-
-        res.send(table); // Send the constructed table
-    })
-    .catch((error) => {
-        res.send(`<p>Error: ${error}</p><p><a href="/">Back to Home</a></p>`);
-    });
 });
 
 // Route to fetch and display grades

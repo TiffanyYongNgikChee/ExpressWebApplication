@@ -17,19 +17,27 @@ pmysql.createPool({
     console.log("pool error:" + e)
    })
 
-// Function to retrieve all students from the `student` table
-var getStudents = function() {
+// Function to fetch students, with optional filtering by name
+function getStudents(search = '') {
     return new Promise((resolve, reject) => {
-        pool.query('SELECT * FROM student') // SQL query to get all student records
-        .then((data) => {
-            console.log(data)
-            resolve(data) // Resolve the promise with the retrieved data
-        })
-        .catch((error) => {
-            console.log(error)
-            reject(error) // Reject the promise with the error
-        })
-    })
+        let query, params;
+
+        if (search) {
+            query = 'SELECT * FROM student WHERE name LIKE ?';
+            params = [`${search}%`]; // Use the search term with wildcard
+        } else {
+            query = 'SELECT * FROM student';
+            params = []; // No parameters if no search term
+        }
+
+        pool.query(query, params)
+            .then((data) => {
+                resolve(data); // Resolve the data if the query is successful
+            })
+            .catch((error) => {
+                reject(error); // Reject with the error if the query fails
+            });
+    });
 }
 
 // Function to retrieve student names, module names, and grades from the database
